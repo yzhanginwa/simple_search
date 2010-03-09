@@ -13,7 +13,28 @@ That's where the SimpleSearch plugin comes from.
 Example
 =======
 
-Example goes here.
+Code in controller:
+
+      @search_criteria = SearchCriteria.new(params[:search_criteria])
+      @users = User.all(:conditions => @search_criteria.conditions)
+
+Code in views:
+
+     <% form_for @search_criteria do |f| %>
+       <%=f.label :first_name %>
+       <%=f.text_field :first_name %>
+       
+       <%=f.label :last_name%>
+       <%=f.text_field :last_name %>
+
+       <%=f.label :login%>
+       <%=f.text_field :login%>
+     <% end %>
+
+     <% @users.each do |user| %>
+      <%= # show the attributes of user %>
+     <% end %>
 
 
-Copyright (c) 2010 [name of plugin creator], released under the MIT license
+
+Copyright (c) 2010 [Yi Zhang], released under the MIT license
