@@ -16,7 +16,7 @@ Example
 Code in controller:
 
       @simple_search = SimpleSearch.new(User, params[:simple_search])
-      @simple_search.run()
+      @users = @simple_search.run()
 
 Code in views:
 
