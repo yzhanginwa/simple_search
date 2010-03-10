@@ -7,16 +7,11 @@ module SimpleSearch
       sanitize_criteria
       @config = {:exact_match => []}
       @config.merge!(config)
-      @join_mappings = {}
       @joins = {}
     end
   
     def method_missing(method)
       @criteria[method.to_s]
-    end
-  
-    def add_join_mappings(h={})
-      @join_mappings.merge!(h)
     end
   
     def add_conditions(h={})
