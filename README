@@ -20,7 +20,7 @@ Code in model (app/model/search.rb):
 
 Code in controller:
 
-      @search = Search.new(User, params[:simple_search])
+      @search = Search.new(User, params[:search])
       @users = @search.run()
 
 Code in views:
@@ -34,6 +34,13 @@ Code in views:
 
        <%=f.label :login%>
        <%=f.text_field :login%>
+
+       <%=f.label :state%>
+       <%=f.text_field "address.state"  # address is an association of model User %>
+
+       <%=f.label :post%>
+       <%=f.text_field "posts.title"    # posts is an association of model User %>
+
      <% end %>
 
      <% @users.each do |user| %>
