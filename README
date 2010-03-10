@@ -13,14 +13,19 @@ That's where the SimpleSearch plugin comes from.
 Example
 =======
 
+Code in model (app/model/search.rb):
+
+      class Search < SimpleSearch::Base
+      end
+
 Code in controller:
 
-      @simple_search = SimpleSearch.new(User, params[:simple_search])
-      @users = @simple_search.run()
+      @search = Search.new(User, params[:simple_search])
+      @users = @search.run()
 
 Code in views:
 
-     <% form_for @simple_search do |f| %>
+     <% form_for @search do |f| %>
        <%=f.label :first_name %>
        <%=f.text_field :first_name %>
        
