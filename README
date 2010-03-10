@@ -15,12 +15,12 @@ Example
 
 Code in controller:
 
-      @search_criteria = SearchCriteria.new(params[:search_criteria])
-      @users = User.all(:conditions => @search_criteria.conditions)
+      @simple_search = SimpleSearch.new(User, params[:simple_search])
+      @simple_search.run()
 
 Code in views:
 
-     <% form_for @search_criteria do |f| %>
+     <% form_for @simple_search do |f| %>
        <%=f.label :first_name %>
        <%=f.text_field :first_name %>
        
