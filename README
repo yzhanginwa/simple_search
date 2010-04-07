@@ -38,11 +38,12 @@ Code in views:
        <%=f.text_field :login%>
 
        <%=f.label :state%>
-       <%=f.text_field "address.state"  # address is an association of model User %>
+       <%=f.text_field "address.state" %>  <!-- address is an association of model User -->
 
        <%=f.label :post%>
-       <%=f.text_field "posts.title"    # posts is an association of model User %>
+       <%=f.text_field "posts.title" %>   <!-- posts is an association of model User -->
 
+       <%=f.submit %>
      <% end %>
 
      <% @users.each do |user| %>
