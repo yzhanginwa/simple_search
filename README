@@ -28,20 +28,15 @@ Code in controller:
 Code in views:
 
      <% form_for @search do |f| %>
-       <%=f.label :first_name %>
-       <%=f.text_field :first_name %>
-       
-       <%=f.label :last_name%>
-       <%=f.text_field :last_name %>
 
-       <%=f.label :login%>
-       <%=f.text_field :login%>
+       <%=f.label :email %>
+       <%=f.text_field :email %>
 
        <%=f.label :state%>
-       <%=f.text_field "address.state" %>  <!-- address is an association of model User -->
+       <%=f.select "address.state_id", [['AL', 1], ...] %>  <!-- address is an association of model User -->
 
        <%=f.label :post%>
-       <%=f.text_field "posts.title" %>   <!-- posts is an association of model User -->
+       <%=f.text_field "posts.comments.author" %>           <!-- the associations could go even deeper, isn't it POWERFUL? -->
 
        <%=f.submit %>
      <% end %>
