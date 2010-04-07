@@ -10,45 +10,51 @@ module SimpleSearch
       @joins = {}
     end
   
-    def method_missing(method)
-      @criteria[method.to_s]
-    end
-  
     def add_conditions(h={})
       @criteria.merge!(h)
     end
   
-    def joins
-      result = ''
-      @joins.each do |table, constrain|
-        result << " inner join  #{table} on #{constrain}" 
-      end
-      result
-    end
-  
-    def conditions
-      return @conditions unless @conditions.nil? 
-      @criteria.each do |key, value|
-        table, field, ass_ref = parse_attribute(key)
-        insert_condition(table, field, ass_ref, value)
-        insert_join(table, field, ass_ref, value)
-      end
-      @conditions
-    end
-  
     def run(option={})
-      @model_class.all({:select => "distinct #{@model_class.table_name}.*", :conditions => self.conditions, :joins => self.joins}.merge(option))
+      run_criteria
+      @model_class.all({:select => "distinct #{@model_class.table_name}.*", :conditions => @conditions, :joins => @joins_str }.merge(option))
     end
   
     private
   
-    def insert_condition(table, field, ass_ref, value)
+    def method_missing(method)
+      @criteria[method.to_s]
+    end
+  
+    def make_joins
+      @joins_str = ''
+      @joins = @joins.values
+      @joins.sort! {|a,b| a[0] <=> b[0]}
+      @joins.each do |j|
+        table = j[1]
+        constrain = j[2]
+        @joins_str << " inner join  #{table} on #{constrain}" 
+      end
+    end
+  
+    def run_criteria
+      return @conditions unless @conditions.nil? 
+      @criteria.each do |key, value|
+        parse_attribute(key, value)
+      end
+
+      make_joins
+    end
+
+    def insert_condition(base_class, attribute, field, value)
+      table = base_class.table_name
       key = "#{table}.#{field}"
   
       @conditions ||= []
-      model_class = ass_ref.nil? ? @model_class : ass_ref.klass
-      column = model_class.columns_hash[field.to_s]
-  
+      column = base_class.columns_hash[field.to_s]
+      if column.number? 
+        value = column.type_cast(value)
+        @criteria[attribute] = value 
+      end
       if column.number? || @config[:exact_match].include?((@table_name == table)? field : key)
         verb = '='
       else
@@ -65,33 +71,41 @@ module SimpleSearch
       end
     end     
   
-    def insert_join(table, field, ass_ref, value)
-      unless table == @table_name
-        if @joins[table].nil?
-          if ass_ref.belongs_to?
-            @joins[table] = "#{@table_name}.#{ass_ref.primary_key_name} = #{table}.#{ass_ref.klass.primary_key}"
+    def insert_join(base_class, asso_ref)
+      base_table = base_class.table_name
+      asso_table = asso_ref.klass.table_name
+      
+      @join_count ||= 0
+      unless base_table == asso_table
+        if @joins[asso_table].nil?
+          @join_count += 1
+          if asso_ref.belongs_to?
+            @joins[asso_table] =[@join_count, asso_table, "#{base_table}.#{asso_ref.primary_key_name} = #{asso_table}.#{asso_ref.klass.primary_key}"]
           else
-            @joins[table] = "#{@table_name}.#{@model_class.primary_key} = #{table}.#{ass_ref.primary_key_name}"
+            @joins[asso_table] = [@join_count, asso_table, "#{base_table}.#{base_class.primary_key} = #{asso_table}.#{asso_ref.primary_key_name}"]
           end
         end
       end
     end
   
-    def parse_attribute(attribute)
-      if attribute =~ /\./
-        association, field = attribute.split(/\./)
-      else
-        association, field = nil, attribute
+    def parse_attribute(attribute, value)
+      unless attribute =~ /\./
+        field = attribute
+        insert_condition(@model_class, attribute, field, value)
+        return
+      end 
+
+      association_fields = attribute.split(/\./)
+      field = association_fields.pop
+
+      base_class = @model_class
+      while (association_fields.size > 0) 
+        association_fields[0] = base_class.reflect_on_association(association_fields[0].to_sym)
+        insert_join(base_class, association_fields[0])
+        base_class = association_fields.shift.klass
       end
-      
-      if association.nil?
-        association_reflection = nil
-        table = @model_class.table_name
-      else
-        association_reflection = @model_class.reflect_on_association(association.to_sym)
-        table = association_reflection.klass.table_name    
-      end
-      [table, field, association_reflection]
+
+      insert_condition(base_class, attribute, field, value)
     end
   
     def sanitize_criteria
