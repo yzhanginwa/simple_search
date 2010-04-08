@@ -1,24 +1,59 @@
 module SimpleSearch
+  DEFAULT_CONFIG = { :exact_match => [], 
+                     :paginate => true, 
+                     :page_name => 'page', 
+                     :offset => 0,
+                     :limit => 1000, 
+                     :per_page => 20
+                   }
   class Base
     def initialize(model_class, criteria, config={})
       @model_class = (model_class.is_a?(Symbol) || model_class.is_a?(String))? model_class.to_s.capitalize.constantize : model_class
       @table_name = @model_class.table_name
       @criteria = criteria.nil? ? {} : criteria
       sanitize_criteria
-      @config = {:exact_match => []}
-      @config.merge!(config)
+      @config = DEFAULT_CONFIG.merge(config)
       @joins = {}
     end
   
+    def count
+      @count || 0
+    end
+
+    def pages
+      (count == 0)? 0 : (count / @config[:per_page].to_i + 1) 
+    end
+
+    def pages_for_select
+      (1..pages).to_a
+    end
+
     def add_conditions(h={})
       @criteria.merge!(h)
     end
   
     def run(option={})
       run_criteria
-      @model_class.all({:select => "distinct #{@model_class.table_name}.*", :conditions => @conditions, :joins => @joins_str }.merge(option))
+      if @config[:paginate]
+        @count = @model_class.count({:select => "distinct #{@model_class.table_name}.#{@model_class.primary_key}", 
+                                     :conditions => @conditions,
+                                     :joins => @joins_str }
+                 )
+        offset = [((@page || 0) - 1) * @config[:per_page], 0].max
+        limit = @config[:per_page]
+      else
+        offset = @config[:offset]
+        limit = @config[:limit]
+      end
+
+      @model_class.all({:select => "distinct #{@model_class.table_name}.*", 
+                        :conditions => @conditions,
+                        :joins => @joins_str, 
+                        :offset => @config[:offset],
+                        :limit => @config[:limit] }.merge(option)
+      )
     end
-  
+
     private
   
     def method_missing(method)
@@ -39,7 +74,12 @@ module SimpleSearch
     def run_criteria
       return @conditions unless @conditions.nil? 
       @criteria.each do |key, value|
-        parse_attribute(key, value)
+        if @config[:page_name].to_s == key.to_s
+          @page = value.to_i
+          @criteria[key] = @page
+        else
+          parse_attribute(key, value)
+        end
       end
 
       make_joins
