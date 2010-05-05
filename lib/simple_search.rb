@@ -56,8 +56,13 @@ module SimpleSearch
 
     private
   
-    def method_missing(method)
-      @criteria[method.to_s]
+    def method_missing(method, *args)
+      method_str = method.to_s
+      if method_str =~ /^([^=]+)=$/
+        @criteria[$1.to_s] = args[0]
+      else 
+        @criteria[method_str]
+      end
     end
   
     def make_joins
@@ -91,17 +96,19 @@ module SimpleSearch
   
       @conditions ||= []
       column = base_class.columns_hash[field.to_s]
-      if column.number? 
+
+      if !column.text? && value.is_a?(String)
         value = column.type_cast(value)
         @criteria[attribute] = value 
       end
-      if column.number? || @config[:exact_match].include?((@table_name == table)? field : key)
-        verb = '='
-      else
+
+      if column.text? && ! @config[:exact_match].include?((@table_name == table)? field : key)
         verb = 'like'
         value = "%#{value}%"
+      else
+        verb = '='
       end
-  
+
       if @conditions.size < 1
         @conditions[0] = "#{key} #{verb} ?"
         @conditions[1] = value
