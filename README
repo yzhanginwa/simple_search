@@ -6,18 +6,18 @@ This plugin has paginating feature built in. If you're not looking for a full-te
 most probably satisfy all your searching requirement.
 
 From time to time, I need to build pages to show a list of narrowed down records from a database table by giving 
-some searching criteria on some columns of the table and/or of some referencing tables. Before I implemented this plugin, 
-I usually do the searching in the following way:
+some searching criteria on some columns of the table and/or of some referencing tables. Before I implemented this
+plugin, I usually do the searching in the following way:
     1) Use <%= form_tag %> to build a form in the view
     2) Get the searching criteria from the params hash individually in the controller and put them into instance variable to be used in view
     3) Build the SQL WHERE clause and sometimes the JOIN clause according to the values from the form
     4) Run the find(:all, :conditions => [xxxxxx], :joins => "yyyyyy") with the WHERE and JOIN clauses
 
 After having used this pattern a few times, I realized I could DRY it to make future coding of this kind of searching
-much simpler. That was where the SimpleSearch plugin came from. 
+much simpler. That's where the SimpleSearch plugin comes in. 
 
-Now implementing the searching/filter page is a lot easier for me. You're see how easy it is by taking a look at the following example.
-I may give more examples in the future when I have some spare time. 
+Now implementing the searching/filter page is a lot easier for me. You're see how easy it is by taking a look at the 
+following example. I may give more examples in the future when I have some spare time. 
 
 
 Example
