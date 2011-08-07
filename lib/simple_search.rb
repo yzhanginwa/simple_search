@@ -32,6 +32,16 @@ module SimpleSearch
       @criteria.merge!(h)
     end
   
+    def conditions
+      run_criteria
+      @conditions
+    end
+
+    def joins
+      run_criteria
+      @joins_str
+    end
+
     def run(option={})
       run_criteria
       if @config[:paginate]
@@ -102,7 +112,9 @@ module SimpleSearch
         @criteria[attribute] = value 
       end
 
-      if column.text? && ! @config[:exact_match].include?((@table_name == table)? field : key)
+      if value.nil?
+        verb = 'is'
+      elsif column.text? && ! @config[:exact_match].include?((@table_name == table)? field : key)
         verb = 'like'
         value = "%#{value}%"
       else
