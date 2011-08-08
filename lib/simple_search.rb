@@ -8,7 +8,7 @@ module SimpleSearch
                    }
   class Base
     def initialize(model_class, criteria, config={})
-      @model_class = (model_class.is_a?(Symbol) || model_class.is_a?(String))? model_class.to_s.capitalize.constantize : model_class
+      @model_class = (model_class.is_a?(Symbol) || model_class.is_a?(String))? model_class.to_s.camelize.constantize : model_class
       @table_name = @model_class.table_name
       @criteria = criteria.nil? ? {} : criteria
       sanitize_criteria
