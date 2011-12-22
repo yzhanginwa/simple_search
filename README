@@ -41,7 +41,7 @@ Code in model (app/model/search.rb):
 Code in controller:
 
       @search = Search.new(User, params[:search])
-      @users = @search.run()
+      @users = @search.run(:order => 'email')
 
 Code in views:
 
