@@ -1,3 +1,7 @@
+[Update]: The SimpleSearch does not support 3.0 yet. The future for SimpleSearch is the rails-simple-search gem.
+          For more detail, please see https://rubygems.org/gems/rails-simple-search  and  https://github.com/yzhanginwa/rails-simple-search
+
+
 SimpleSearch
 ============
 
